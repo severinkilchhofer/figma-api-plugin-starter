@@ -1,60 +1,93 @@
 <script>
+    import {IconSearchLarge, IconSpinner, Input} from 'figma-plugin-ds-svelte';
 
-	//import Global CSS from the svelte boilerplate
-	//contains Figma color vars, spacing vars, utility classes and more
-	import { GlobalCSS } from 'figma-plugin-ds-svelte';
+    let search = "";
+    let games = [];
+    let initialLoad = true;
+    let loading = false;
 
-	//import some Svelte Figma UI components
-	import { Button, Input, Label, SelectMenu } from 'figma-plugin-ds-svelte';
+    const apiSearchUrl = "https://api.boardgameatlas.com/api/search";
 
-	//menu items, this is an array of objects to populate to our select menus
-	let menuItems = [
-        { 'value': 'rectangle', 'label': 'Rectangle', 'group': null, 'selected': false },
-        { 'value': 'triangle', 'label': 'Triangle ', 'group': null, 'selected': false },
-        { 'value': 'circle', 'label': 'Circle', 'group': null, 'selected': false }
-	];
+    function onSearchItems() {
+        initialLoad = false;
+        loading = true;
+        fetch(`${apiSearchUrl}?name=${search}&client_id=oU6BSFnjWF`)
+            .then(function (response) {
+                return response.json();
 
-	var disabled = true;
-	var selectedShape;
-	var count = 5;
+            }).then(function (data) {
+            games = data.games;
+            console.log('search query', data);
 
-	//this is a reactive variable that will return false when a value is selected from
-	//the select menu, its value is bound to the primary buttons disabled prop
-	$: disabled = selectedShape === null;
+        }).catch(function (error) {
+            console.log(error);
+        });
+    }
 
-	function createShapes() {
-		parent.postMessage({ pluginMessage: { 
-			'type': 'create-shapes', 
-			'count': count,
-			'shape': selectedShape.value
-		} }, '*');
-	}
+    function updateGameData(game) {
+        parent.postMessage({pluginMessage: {type: "update-game", game}}, "*");
+    }
 
-	function cancel() {
-		parent.postMessage({ pluginMessage: { 'type': 'cancel' } }, '*')
-	}
+    // Encoding an image is also done by sticking pixels in an HTML canvas and by asking the canvas to serialize it into
+    // an actual PNG file via canvas.toBlob()
+    async function encode(canvas, ctx, imageData) {
+        ctx.putImageData(imageData, 0, 0)
+
+        return await new Promise((resolve, reject) => {
+            canvas.toBlob(blob => {
+                const reader = new FileReader()
+                reader.onload = () => resolve(new Uint8Array(reader.result))
+                reader.onerror = () => reject(new Error('Could not read from blob'))
+                reader.readAsArrayBuffer(blob)
+            })
+        })
+    }
+
+    // Create an event handler to receive messages from the main thread
+    window.onmessage = async (event) => {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        const art = new Image()
+        art.crossOrigin = 'Anonymous'
+        art.src = event.data.pluginMessage.newImage
+        art.onload = async () => {
+            canvas.width = art.width
+            canvas.height = art.height
+            ctx.drawImage(art, 0, 0)
+            const imageData = ctx.getImageData(0, 0, art.width, art.height)
+            const newBytes = await encode(canvas, ctx, imageData)
+            parent.postMessage({pluginMessage: {type: 'update-image', newBytes}}, '*')
+        }
+    }
 
 </script>
 
 
 <div class="wrapper p-xxsmall">
+    <form on:submit|preventDefault={onSearchItems}>
+        <Input class="input-search" type="search" bind:value={search}
+               iconName={loading ? IconSpinner : IconSearchLarge }
+               spin={loading} borders placeholder="Search for a boardgame..."/>
+    </form>
 
-	<Label>Shape</Label>
-	<SelectMenu bind:menuItems={menuItems} bind:value={selectedShape} class="mb-xxsmall"/>
-	
-	<Label>Count</Label>
-	<Input iconText="#" bind:value={count} class="mb-xxsmall"/>
-
-	<div class="flex p-xxsmall mb-xsmall">
-	<Button on:click={cancel} variant="secondary" class="mr-xsmall">Cancel</Button>
-	<Button on:click={createShapes} bind:disabled={disabled}>Create shapes</Button>
-	</div>
+    <ul>
+        {#each games as game}
+            <li class="card-item" on:click={updateGameData(game)}>
+                <div class="content-container">
+                    <div class="image-container">
+                        <img class="product-image" src={game.images.small} alt="">
+                    </div>
+                    <p class="product-title">{game.name}</p>
+                </div>
+            </li>
+        {/each}
+    </ul>
 
 </div>
 
 
 <style>
 
-/* Add additional global or scoped styles here */
+    /* Add additional global or scoped styles here */
 
 </style>
