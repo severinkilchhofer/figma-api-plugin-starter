@@ -1,0 +1,8 @@
+/node_modules/
+/public/build/
+public/index.html
+src/build
+.DS_Store
+/.idea/figma-api-plugin-starter.iml
+/.idea/modules.xml
+/.idea/.gitignore

@@ -1,0 +1,11 @@
+{
+  "name": "Figma API Plugin Starter",
+  "id": "1051117928452759524",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": [
+    "figma",
+    "figjam"
+  ],
+  "ui": "index.html"
+}
