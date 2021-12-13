@@ -1,24 +1,26 @@
 <script>
     import {IconSearchLarge, IconSpinner, Input} from 'figma-plugin-ds-svelte';
+    import Boardgame from './images/boardgame.svg';
 
     let search = "";
     let games = [];
-    let initialLoad = true;
+    let introScreen = true;
     let loading = false;
+    let clientId = 'CLIENT_ID' // Add you client_id from boardgameatlas.com here
 
     const apiSearchUrl = "https://api.boardgameatlas.com/api/search";
 
     function onSearchItems() {
-        initialLoad = false;
         loading = true;
-        fetch(`${apiSearchUrl}?name=${search}&client_id=oU6BSFnjWF`)
+        introScreen = false;
+        fetch(`${apiSearchUrl}?name=${search}&client_id=${clientId}`)
             .then(function (response) {
                 return response.json();
 
             }).then(function (data) {
             games = data.games;
+            loading = false;
             console.log('search query', data);
-
         }).catch(function (error) {
             console.log(error);
         });
@@ -67,27 +69,98 @@
     <form on:submit|preventDefault={onSearchItems}>
         <Input class="input-search" type="search" bind:value={search}
                iconName={loading ? IconSpinner : IconSearchLarge }
-               spin={loading} borders placeholder="Search for a boardgame..."/>
+               spin={loading} borders placeholder="Search for a boardgame like Catan, Terraforming Mars..."/>
     </form>
 
-    <ul>
-        {#each games as game}
-            <li class="card-item" on:click={updateGameData(game)}>
-                <div class="content-container">
-                    <div class="image-container">
-                        <img class="product-image" src={game.images.small} alt="">
+    {#if introScreen}
+        <div class="loading-container">
+            {@html Boardgame}
+            <p>Please be aware that you have to add your personal "client_id" from boardgameatlas.com to see results.</p>
+        </div>
+    {:else}
+        <ul>
+            {#each games as game}
+                <li class="card-item" on:click={updateGameData(game)}>
+                    <div class="card-container">
+                        <div class="image-container">
+                            <img class="product-image" src={game.images.small} alt="">
+                        </div>
+                        <div class="content-container">
+                            <p class="product-title">{game.name}</p>
+                            <p>{game.price_text}</p>
+                        </div>
                     </div>
-                    <p class="product-title">{game.name}</p>
-                </div>
-            </li>
-        {/each}
-    </ul>
-
+                </li>
+            {/each}
+        </ul>
+    {/if}
 </div>
 
 
 <style>
-
     /* Add additional global or scoped styles here */
 
+    form {
+        padding: 6px;
+        margin-bottom: 6px;
+    }
+
+    ul {
+        padding: 0 6px;
+        margin: 0;
+    }
+
+    p {
+        padding: 0 6px;
+        font-size: 11px;
+    }
+
+    .card-item {
+        width: 100%;
+        min-height: 4rem;
+        display: flex;
+        align-items: center;
+        padding: 6px;
+        font-size: 11px;
+        cursor: pointer;
+        background: white;
+        justify-content: space-between;
+        border-bottom: 1px solid #E2E2E2;
+    }
+
+    .card-item:hover {
+        font-weight: 600;
+    }
+
+    .card-container {
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .content-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .image-container {
+        display: flex;
+        justify-content: center;
+        flex: 0 0 3.125rem;
+    }
+
+    .product-image {
+        max-height: 3.125rem;
+        max-width: 100%;
+    }
+
+    .loading-container {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 2rem;
+    }
 </style>

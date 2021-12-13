@@ -32,7 +32,8 @@ const mapping = {
     }),
     'Description': (node, game) => __awaiter(void 0, void 0, void 0, function* () {
         yield figma.loadFontAsync(node.fontName);
-        node.characters = game.description_preview ? game.description_preview : 'No info available';
+        const truncate = (input) => input.length > 120 ? `${input.substring(0, 120)}...` : input;
+        node.characters = game.description_preview ? truncate(game.description_preview) : 'No info available';
     }),
     'Price': (node, game) => __awaiter(void 0, void 0, void 0, function* () {
         yield figma.loadFontAsync(node.fontName);
@@ -41,7 +42,7 @@ const mapping = {
     'Image': (node, game) => __awaiter(void 0, void 0, void 0, function* () {
         const newFills = [];
         for (const paint of node.fills) {
-            const imageUrl = game.images.medium ? game.images.medium : null;
+            const imageUrl = game.image_url ? game.image_url : null;
             newFills.push(yield createImage(paint, imageUrl));
         }
         node.fills = newFills;
@@ -104,3 +105,4 @@ figma.ui.onmessage = (msg) => __awaiter(void 0, void 0, void 0, function* () {
     // keep running, which shows the cancel button at the bottom of the screen.
     // figma.closePlugin();
 });
+//# sourceMappingURL=code.js.map

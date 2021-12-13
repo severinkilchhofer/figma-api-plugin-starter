@@ -7,7 +7,8 @@ export const mapping = {
     },
     'Description': async (node: TextNode, game) => {
         await figma.loadFontAsync(node.fontName as FontName);
-        node.characters = game.description_preview ? game.description_preview : 'No info available'
+        const truncate = (input) => input.length > 120 ? `${input.substring(0, 120)}...` : input;
+        node.characters = game.description_preview ? truncate(game.description_preview) : 'No info available'
     },
     'Price': async (node: TextNode, game) => {
         await figma.loadFontAsync(node.fontName as FontName);
@@ -16,7 +17,7 @@ export const mapping = {
     'Image': async (node: any, game) => {
         const newFills = []
         for (const paint of node.fills) {
-            const imageUrl = game.images.medium ? game.images.medium : null;
+            const imageUrl = game.image_url ? game.image_url : null;
             newFills.push(await createImage(paint, imageUrl))
         }
         node.fills = newFills
