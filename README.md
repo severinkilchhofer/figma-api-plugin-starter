@@ -1,8 +1,11 @@
 # Figma API Plugin Starter
 
+![Plugin Cover](src/images/cover.png)
+
+## Introduction
+
 A starter kit for creating a Figma Plugin with an API to search for products and insert data into a Figma component.
 This starter is based on the boilerplate [Figsvelte](https://github.com/thomas-lowry/figsvelte/blob/master/README.md).
-
 For this starter, I used the API of [boardgameatlas.com](https://www.boardgameatlas.com/api/docs), but you can use whatever API you want.
 
 ## To get started
@@ -41,7 +44,7 @@ npm run dev
 
 Start building your plugin UI in `'src/PluginUI.svelte'`.
 
-To use the Boargameatlas API you have to create your own client_id here: https://www.boardgameatlas.com/api/docs/apps
+To use the Boardgameatlas API you have to create your own client_id here: https://www.boardgameatlas.com/api/docs/apps
 
 ## Build
 
